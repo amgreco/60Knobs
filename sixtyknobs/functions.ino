@@ -59,9 +59,20 @@ void interpretKnob(uint8_t index, bool force, bool inhibit) {
       }
     }
     else {
-      /*---   It's an DX7 SysEx knob    ---*/
-      sendDX7Message(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); //comment this line
-    //  sendRefaceDXMessage(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); // and uncomment this line to make the 60 knobs work with reface DX instead
+      /*--- It's a Custom sysex knob ---*/
+      
+      uint8_t SYNTHID = activePreset.synth_id;  
+      switch (SYNTHID){
+        case 1:
+          sendDX7Message(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); 
+        break;
+        case 2:
+          sendRefaceDXMessage(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend);
+        break;
+        case 3:
+          sendEvolverMessage(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend);
+        break;
+      }
     }
 
     //we fill the emission buffers
@@ -70,6 +81,26 @@ void interpretKnob(uint8_t index, bool force, bool inhibit) {
     }
     emittedValue[0][index] = toSend;
   }
+}
+
+//Sends custom sysex formatted for the Evolver
+void sendEvolverMessage(uint8_t control, uint8_t range1, uint8_t range2, uint8_t value) {
+//the array to transmit
+  uint8_t data[7] = {0x01, 0x20, 0x01, 0x01, 0x00, 0x00, 0x00};
+
+  //map values range
+  value = map(value,0,127,0,range1+range2);
+  
+  //separate Input value into 2 Nibbles
+  uint8_t LSNibble = value & 0x0F;
+  uint8_t MSNibble = (value >> 4) & 0x0F;
+
+  data[4] = control;
+  data[5] = LSNibble;
+  data[6] = MSNibble;
+
+  MIDI.sendSysEx(7, data, false);
+  
 }
 
 //Sends an Unipolar NRPN message

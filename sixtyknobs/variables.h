@@ -9,6 +9,12 @@ struct Preset_t {
   
   // channel the device is sending on
   uint8_t channel;
+
+  // the synth id for custom SysEx
+  // 1 - DX7
+  // 2 - Reface DX
+  // 3 - Evolver
+  uint8_t synth_id;
   
   // information on how knobs are setup
   struct Knob_t {

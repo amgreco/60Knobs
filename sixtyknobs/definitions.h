@@ -47,7 +47,9 @@ enum Command_t {
   RANDOMIZER = 10,
   INVERTKNOB = 17,
   DROPNRPNLSB = 19,
-  SETKNOBASENRPN = 18
+  SETKNOBASENRPN = 18,
+  SETKNOBASEVO = 22,
+  SETKNOBASREFACEDX = 23
 };
 
 /*---   Tunable interface behavior   ---*/

@@ -139,11 +139,14 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
           //PARAM 2 : DX7 parameter number most significant bit
           //PARAM 3 : DX7 parameter number last 7 bits
           //PARAM 4 : maximum value that can be reached by that parameter
+          
           if (data[PARAM1] < NUMBEROFKNOBS) {
+            activePreset.synth_id = 1; //DX7 ID        
             uint8_t knobIndex = data[PARAM1];
             activePreset.knobInfo[knobIndex].CC = 0;
             activePreset.knobInfo[knobIndex].NRPN = (data[PARAM2] << 7) | data[PARAM3];
             activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4];
+            
 
             //knob in normal mode by default
             clearBits64(activePreset.invertBits, data[PARAM1]);
@@ -151,6 +154,50 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
 
           break;
         }
+
+        
+      case SETKNOBASREFACEDX :  //Sets a knob as a DX7 parameter change knob
+        {
+          //PARAM 1 : which knob do we affect ?
+          //PARAM 2 : DX7 parameter number most significant bit
+          //PARAM 3 : DX7 parameter number last 7 bits
+          //PARAM 4 : maximum value that can be reached by that parameter
+          
+          if (data[PARAM1] < NUMBEROFKNOBS) {
+            activePreset.synth_id = 2; // Reface DX ID        
+            uint8_t knobIndex = data[PARAM1];
+            activePreset.knobInfo[knobIndex].CC = 0;
+            activePreset.knobInfo[knobIndex].NRPN = (data[PARAM2] << 7) | data[PARAM3];
+            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4];
+            
+
+            //knob in normal mode by default
+            clearBits64(activePreset.invertBits, data[PARAM1]);
+          }
+
+          break;
+        }
+
+      case SETKNOBASEVO :  //Sets a knob as a Evolver parameter change knob
+        {
+          //PARAM 1 : Knob to affect 
+          //PARAM 2 : Control Number
+          //PARAM 3 : Range first (max 127)
+          //PARAM 4 : Range add (for values above 127)
+          
+          if (data[PARAM1] < NUMBEROFKNOBS) {
+            activePreset.synth_id = 3; //Evolver ID
+            uint8_t knobIndex = data[PARAM1];
+            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
+            activePreset.knobInfo[knobIndex].NRPN = data[PARAM3];
+            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4];
+                        
+            //knob in normal mode by default
+            clearBits64(activePreset.invertBits, data[PARAM1]);
+          }
+
+          break;
+        }        
 
       case INVERTKNOB : //Sets a knob to be inverted or not
         {
@@ -242,4 +289,3 @@ void handleProgramChange(byte channel, byte number) {
     loadPreset(number);
   }
 }
-
