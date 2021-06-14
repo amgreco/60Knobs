@@ -1,4 +1,4 @@
-# 60Knobs
+# 60Knobs_SysEx
 Firmware, Editor, Schematic, Enclosure, MIDI chart
 
 Modifying the code to support other synths than DX7
