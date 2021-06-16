@@ -18,7 +18,6 @@ void formatFactory() {
   
   // Create default preset
   Preset_t defaultPreset;
-  defaultPreset.channel = 1;
   defaultPreset.knobType = 1;
 
     defaultPreset.knobInfo[0].CC = 84;
@@ -164,7 +163,7 @@ void formatFactory() {
     defaultPreset.knobInfo[46].SYSEX = 0;
     defaultPreset.knobInfo[47].CC = 93;
     defaultPreset.knobInfo[47].NRPN = 0;
-    defaultPreset.knobInfo[47].SYSEX = 128;
+    defaultPreset.knobInfo[47].SYSEX = 0;
     defaultPreset.knobInfo[48].CC = 55;
     defaultPreset.knobInfo[48].NRPN = 0;
     defaultPreset.knobInfo[48].SYSEX = 0;
@@ -247,7 +246,7 @@ void savePreset(uint8_t presetNbr)
   }
   
   //Visual feedback
-  //we wait a bit with the LED oon
+  //we wait a bit with the LED on
   digitalWrite(LED_PIN, HIGH);
   delay(1000);
   //we blink it
