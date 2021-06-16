@@ -24,25 +24,28 @@ void interpretKnob(uint8_t index, bool force, bool inhibit) {
 
 
   switch (activePreset.knobType){
-    case 1 : // CC GLOBAL 
-      MIDI.sendControlChange(activePreset.knobInfo[index].CC, toSend, activePreset.channel);
+    case 1 : // CC 
+    //Test if global or independent channel
+      if (activePreset.knobInfo[index].SYSEX == 0){
+        sendGlobalCC(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, toSend, activePreset.channel);
+      }
+      else {
+        sendIndeCC(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, toSend, activePreset.knobInfo[index].SYSEX);
+      }
     break;
-    case 2 : // CC INDEPENDENT
-      MIDI.sendControlChange(activePreset.knobInfo[index].CC, toSend, activePreset.knobInfo[index].NRPN);
-    break;
-    case 3 : // NRPN
+    case 2 : // NRPN
       sendNRPN(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend, activePreset.channel);
     break;
-    case 4 : // DX7
+    case 3 : // DX7
       sendDX7Message(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); 
     break;
-    case 5 : // REFACE DX
+    case 4 : // REFACE DX
       sendRefaceDXMessage(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); 
     break;
-    case 6 : // EVOLVER 
+    case 5 : // EVOLVER 
       sendEvolverMessage(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); 
     break;
-    case 7 : // MOPHO
+    case 6 : // MOPHO
       sendMophoNRPN(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend, activePreset.channel);
     break;  
   }
@@ -55,6 +58,18 @@ void interpretKnob(uint8_t index, bool force, bool inhibit) {
   }
 }
 
+void sendGlobalCC(uint8_t param, uint8_t range, uint8_t value, uint8_t channel){ 
+  value = map(value, 0, 127, 0, range); 
+  MIDI.sendControlChange(param,value,channel);
+
+}
+
+void sendIndeCC(uint8_t param, uint8_t range, uint8_t value, uint8_t channel){
+  value = map(value, 0, 127, 0, range); 
+  MIDI.sendControlChange(param,value,channel);
+
+}
+  
 void sendNRPN(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value, uint8_t channel) {
   //map values range
   value = map(value,0,127,0,range);

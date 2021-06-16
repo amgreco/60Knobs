@@ -34,9 +34,9 @@ enum SysexByteNumber_t {
 
 //the numbers associated with every command in the interpreter
 enum Command_t {
-  SETKNOBASGLOBALCC = 1,
-  SETKNOBASINDEPCC = 15,
+  SETKNOBASCC = 1,
   SETKNOBASNRPN = 2,
+//  SETKNOBASINDEPCC = 15,
 //  SETKNOBASUNRPN = 3,
   PRESETSAVE = 5,
   PRESETLOAD = 6,

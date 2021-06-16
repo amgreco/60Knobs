@@ -20,37 +20,19 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
           break;
         }
 
-        
-      case SETKNOBASGLOBALCC :  //Sets a knob as a global CC knob
+
+      case SETKNOBASCC :   //Sets a knob as an independent CC knob
         {
           activePreset.knobType = 1;
           //PARAM 1 : which knob do we affect ?
-          //PARAM 2 : the CC number
-          if (data[PARAM1] < NUMBEROFKNOBS) {          
-            uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
-            activePreset.knobInfo[knobIndex].NRPN = 0;
-            activePreset.knobInfo[knobIndex].SYSEX = 0;
-
-            //knob in normal mode by default
-            clearBits64(activePreset.invertBits, data[PARAM1]);
-          }
-
-          break;
-        }
-
-
-      case SETKNOBASINDEPCC :   //Sets a knob as an independent CC knob
-        {
-          activePreset.knobType = 2;
-          //PARAM 1 : which knob do we affect ?
           //PARAM 2 : CC number
-          //PARAM 3 : the MIDI channel of that knob
+          //PARAM 3 : range
+          //PARAM 4 : the MIDI channel of that knob
           if (data[PARAM1] < NUMBEROFKNOBS) {
             uint8_t knobIndex = data[PARAM1];
             activePreset.knobInfo[knobIndex].CC = data[PARAM2];
             activePreset.knobInfo[knobIndex].NRPN = data[PARAM3];
-            activePreset.knobInfo[knobIndex].SYSEX = 0;
+            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4];;
 
             //knob in normal mode by default
             clearBits64(activePreset.invertBits, data[PARAM1]);
@@ -62,7 +44,7 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
 
       case SETKNOBASNRPN : //Sets a knob as a Bipolar NRPN (-63, +63) knob
         {
-          activePreset.knobType = 3;
+          activePreset.knobType = 2;
           //PARAM 1 : which knob do we affect ?
           //PARAM 2 : NRPN number LSB
           //PARAM 3 : NRPN number MSB
@@ -84,7 +66,7 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
 
       case SETKNOBASDX :  //Sets a knob as a DX7 parameter change knob
         {
-          activePreset.knobType = 4;
+          activePreset.knobType = 3;
           //PARAM 1 : which knob do we affect ?
           //PARAM 2 : DX7 parameter number most significant bit
           //PARAM 3 : DX7 parameter number last 7 bits
@@ -105,7 +87,7 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
 
       case SETKNOBASREFACEDX :  //Sets a knob as a DX7 parameter change knob
         {
-          activePreset.knobType = 5;
+          activePreset.knobType = 4;
           //PARAM 1 : which knob do we affect ?
           //PARAM 2 : DX7 parameter number most significant bit
           //PARAM 3 : DX7 parameter number last 7 bits
@@ -127,7 +109,7 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
 
       case SETKNOBASEVO :  //Sets a knob as a Evolver parameter change knob
         {
-          activePreset.knobType = 6;
+          activePreset.knobType = 5;
           //PARAM 1 : Knob to affect 
           //PARAM 2 : Control Number
           //PARAM 3 : Range MS Nibble 
@@ -148,7 +130,7 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
         
 case SETKNOBASMOPHO :  //Sets a knob as a Mopho parameter change knob
         {
-          activePreset.knobType = 7;
+          activePreset.knobType = 6;
           //PARAM 1 : which knob do we affect ?
           //PARAM 2 : NRPN parameter number MSB
           //PARAM 3 : NRPN parameter number LSB
