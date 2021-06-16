@@ -11,69 +11,41 @@ void interpretKnob(uint8_t index, bool force, bool inhibit) {
   //if the value to send is relevant, we send it to the MIDI OUT port
   if (((toSend != emittedValue[0][index]) && (toSend != emittedValue[1][index]) && (toSend != emittedValue[2][index])) || (force == true)) {  //if a message should be sent
 
-    //First we detect which kind of knob it is and we emit the data accordingly
-    if (bitRead(activePreset.knobInfo[index].SYSEX, 7) == 1) {
-      if (activePreset.knobInfo[index].NRPN == 0) {
-        /*---   It's a CC knob    ---*/
-        if (!inhibit) {
-          //check the channel of that specific knob
-          uint8_t knobChannel = activePreset.knobInfo[index].SYSEX & 0x7f;
-          if (knobChannel > 0 && knobChannel < 17) {
-            MIDI.sendControlChange(activePreset.knobInfo[index].CC & 0x7f, toSend, knobChannel);
-          }
-          else if (knobChannel == 0) { //if the channel number is 0, the CC will be sent on the global channel
-            MIDI.sendControlChange(activePreset.knobInfo[index].CC, toSend, activePreset.channel);
-          }
-        }
-      }
-      else {
-        /*---   It's an NRPN knob    ---*/
-        //we calculate the range of the current knob
-        uint8_t range = activePreset.knobInfo[index].SYSEX & 0x7f;
+  // Check knob type :
+  // 0 - Disabled 
+  // 1 - Global CC
+  // 2 - Independent CC
+  // 3 - NRPN
+  // 4 - DX7
+  // 5 - Reface DX
+  // 6 - DSI Evolver
+  // 7 - DSI Mopho
+  // ...more to come
 
-        if (!inhibit) {
-          if ((activePreset.knobInfo[index].NRPN & 0x80) && (activePreset.knobInfo[index].CC & 0x80)) //if the knob is Unipolar NRPN (range : 0~+Max)
-          {
-            sendUnipolarNRPN(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].CC, map(toSend, 0, 127, 0, range), activePreset.channel);
-          }
-          else {  //the knob is Bipolar NRPN (range : -63~+63)
-            if (range < 64) sendBipolarNRPN(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].CC, map(toSend, 0, 127, -range, range), activePreset.channel);
-            else if ( range <= 64 + 4) {
-              switch (range) {
-                case 64 :
-                  sendExtendedNRPN(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].CC, map(toSend, 0, 127, 0, 164), activePreset.channel);
-                  break;
-                case 65 :
-                  sendExtendedNRPN(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].CC, map(toSend, 0, 127, 0, 200), activePreset.channel);
-                  break;
-                case 66 :
-                  sendExtendedNRPN(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].CC, map(toSend, 0, 127, 0, 1600), activePreset.channel);
-                  break;
-                case 67 :
-                  sendExtendedNRPN(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].CC, map(toSend, 0, 127, 0, 2000), activePreset.channel);
-                  break;
-              }
-            }
-          }
-        }
-      }
-    }
-    else {
-      /*--- It's a Custom sysex knob ---*/
-      
-      uint8_t SYNTHID = activePreset.synth_id;  
-      switch (SYNTHID){
-        case 1:
-          sendDX7Message(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); 
-        break;
-        case 2:
-          sendRefaceDXMessage(activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend);
-        break;
-        case 3:
-          sendEvolverMessage(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend);
-        break;
-      }
-    }
+
+  switch (activePreset.knobType){
+    case 1 : // CC GLOBAL 
+      MIDI.sendControlChange(activePreset.knobInfo[index].CC, toSend, activePreset.channel);
+    break;
+    case 2 : // CC INDEPENDENT
+      MIDI.sendControlChange(activePreset.knobInfo[index].CC, toSend, activePreset.knobInfo[index].NRPN);
+    break;
+    case 3 : // NRPN
+      sendNRPN(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend, activePreset.channel);
+    break;
+    case 4 : // DX7
+      sendDX7Message(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); 
+    break;
+    case 5 : // REFACE DX
+      sendRefaceDXMessage(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); 
+    break;
+    case 6 : // EVOLVER 
+      sendEvolverMessage(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend); 
+    break;
+    case 7 : // MOPHO
+      sendMophoNRPN(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend, activePreset.channel);
+    break;  
+  }
 
     //we fill the emission buffers
     for (int i = 2; i > 0; i--) {
@@ -83,71 +55,26 @@ void interpretKnob(uint8_t index, bool force, bool inhibit) {
   }
 }
 
-//Sends custom sysex formatted for the Evolver
-void sendEvolverMessage(uint8_t control, uint8_t range1, uint8_t range2, uint8_t value) {
-//the array to transmit
-  uint8_t data[7] = {0x01, 0x20, 0x01, 0x01, 0x00, 0x00, 0x00};
-
+void sendNRPN(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value, uint8_t channel) {
   //map values range
-  value = map(value,0,127,0,range1+range2);
-  
-  //separate Input value into 2 Nibbles
-  uint8_t LSNibble = value & 0x0F;
-  uint8_t MSNibble = (value >> 4) & 0x0F;
+  value = map(value,0,127,0,range);
 
-  data[4] = control;
-  data[5] = LSNibble;
-  data[6] = MSNibble;
-
-  MIDI.sendSysEx(7, data, false);
-  
+  //Send message
+  MIDI.sendControlChange(99, paramMSB, channel);
+  MIDI.sendControlChange(98, paramLSB, channel); 
+  MIDI.sendControlChange(6, value / 128 , channel);  
+  MIDI.sendControlChange(38, value & 0x7F , channel);
 }
 
-//Sends an Unipolar NRPN message
-void sendUnipolarNRPN(uint8_t NRPNNumberMSB, uint8_t NRPNNumberLSB, uint8_t value, uint8_t channel) {
-  MIDI.sendControlChange(98, NRPNNumberLSB & 0x7F, channel); //NRPN Number LSB
-  MIDI.sendControlChange(99, NRPNNumberMSB & 0x7F, channel);  //NRPN Number MSB
-  MIDI.sendControlChange(6, value, channel);  //NRPN Value
-  if (!activePreset.dropNRPNLSBvalue) {
-    MIDI.sendControlChange(38, 0, channel);  //NRPN Value
-  }
-}
 
-//Sends a Bipolar NRPN message
-void sendBipolarNRPN(uint8_t NRPNNumberMSB, uint8_t NRPNNumberLSB, int8_t value, uint8_t channel) {
-  MIDI.sendControlChange(98, NRPNNumberLSB & 0x7F, channel); //NRPN Number LSB
-  MIDI.sendControlChange(99, NRPNNumberMSB & 0x7F, channel);  //NRPN Number MSB
-
-  //if the value to send is negative, format the data in the right way
-  if (value < 0) {
-    MIDI.sendControlChange(6, 1, channel);  //NRPN MSB negative
-    MIDI.sendControlChange(38, 128 + value, channel); //NRPN MSB negative
-  }
-  //if the value is positive
-  else {
-    MIDI.sendControlChange(38, value, channel);
-  }
-}
-
-void sendExtendedNRPN(uint8_t NRPNNumberMSB, uint8_t NRPNNumberLSB, int16_t value, uint8_t channel) {
-  MIDI.sendControlChange(98, NRPNNumberLSB & 0x7F, channel); //NRPN Number LSB
-  MIDI.sendControlChange(99, NRPNNumberMSB & 0x7F, channel);  //NRPN Number MSB
-  MIDI.sendControlChange(6, (value >> 8) & 0x7f, channel); //NRPN MSB
-  MIDI.sendControlChange(38, value & 0x7f, channel); //NRPN MSB
-}
-
-//Sends a DX7-Parameter Change formated Sysex message
-void sendDX7Message(uint8_t paramNBR, uint8_t rangeMax, uint8_t value) {
+void sendDX7Message(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value) {
   //the array to transmit
   uint8_t data[5] = {0x43, 0x10, 0x00, 0x00, 0x00};
 
-  //if the parameter number takes more than seven bits, set the MSBit correctly
-  if (paramNBR > 127) {
-    data[2] = 0x01;
-  }
-
-  data[3] = paramNBR & 0x7f;
-  data[4] = map(value, 0, 127, 0, rangeMax);
+  value = map(value, 0, 127, 0, range);
+  data[2] = paramMSB;
+  data[3] = paramLSB;
+  data[4] = value;
 
   //output the Sysex message
   MIDI.sendSysEx(5, data, false);
@@ -156,12 +83,12 @@ void sendDX7Message(uint8_t paramNBR, uint8_t rangeMax, uint8_t value) {
   MIDI.sendControlChange(127, 0, 1);  //cc 127 on channel 1 (DX7 only sensitive on channel 1)
 }
 
-
-void sendRefaceDXMessage(uint8_t paramNBR, uint8_t rangeMax, uint8_t value) {
+void sendRefaceDXMessage(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value) {
   //the array to transmit
   uint8_t data[9] = {0x43, 0x10, 0x7F, 0x1C, 0x05, 0x30, 0x00, 0x00, 0x00};
 
   //if the parameter number takes more than seven bits, set the MSBit correctly
+  uint8_t paramNBR = paramMSB + paramLSB;
   if (paramNBR > 35 && paramNBR < 140) {
     paramNBR -= 36;
     uint8_t _operator = paramNBR / 26;
@@ -175,15 +102,37 @@ void sendRefaceDXMessage(uint8_t paramNBR, uint8_t rangeMax, uint8_t value) {
     data[7] = paramNBR;
   }
 
-  data[8] = value;//map(value, 0, 127, 0, 127);
+  value = map(value, 0, 127, 0, range);
+  data[8] = value;
 
-  //output the Sysex message
   MIDI.sendSysEx(9, data, false);
-
-  //sync all the voices
-  // MIDI.sendControlChange(127, 0, 1);  //cc 127 on channel 1 (DX7 only sensitive on channel 1)
 }
 
+
+void sendEvolverMessage(uint8_t control, uint8_t rangeLS, uint8_t rangeMS, uint8_t value) {
+  //the array to transmit
+  uint8_t data[7] = {0x01, 0x20, 0x01, 0x01, 0x00, 0x00, 0x00};
+
+  value = map(value,0,127,0,rangeLS+rangeMS);
+
+  data[4] = control;
+  data[5] = value & 0x0F; // LS Nibble
+  data[6] = ((value & 0xF0) >> 4); // MS Nibble
+
+  MIDI.sendSysEx(7, data, false); 
+}
+
+
+void sendMophoNRPN(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value, uint8_t channel) {
+  //map values range
+  value = map(value,0,127,0,range);
+
+  //Send message
+  MIDI.sendControlChange(99, paramMSB, channel);
+  MIDI.sendControlChange(98, paramLSB, channel); 
+  MIDI.sendControlChange(6, value / 128 , channel);  
+  MIDI.sendControlChange(38, value & 0x7F , channel);
+}
 
 
 

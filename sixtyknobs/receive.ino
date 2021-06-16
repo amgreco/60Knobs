@@ -6,170 +6,31 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
     //check the command byte and acts accordingly
     switch (data[COMMAND]) {
 
-      case SETKNOBASGLOBALCC :  //Sets a knob as a global CC knob
-        {
-          //PARAM 1 : which knob do we affect ?
-          //PARAM 2 : the CC number
-          if (data[PARAM1] < NUMBEROFKNOBS) {
-            uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
-            activePreset.knobInfo[knobIndex].NRPN = 0;
-            activePreset.knobInfo[knobIndex].SYSEX = 128;
-
-            //knob in normal mode by default
-            clearBits64(activePreset.invertBits, data[PARAM1]);
-          }
-
-          break;
-        }
-
-      case SETKNOBASINDEPCC :   //Sets a knob as an independent CC knob
-        {
-          //PARAM 1 : which knob do we affect ?
-          //PARAM 2 : CC number
-          //PARAM 3 : the MIDI channel of that knob
-          if (data[PARAM1] < NUMBEROFKNOBS) {
-            uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
-            activePreset.knobInfo[knobIndex].NRPN = 0;
-            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM3] | 0x80;
-
-            //knob in normal mode by default
-            clearBits64(activePreset.invertBits, data[PARAM1]);
-          }
-
-          break;
-        }
-
       case DISABLEKNOB :  //Sets a knob as an inactive CC knob
         {
+          activePreset.knobType = 0;         
           //PARAM 1 : which knob do we affect ?
           if (data[PARAM1] < NUMBEROFKNOBS) {
             uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC  = 0;  //bullshit CC
+            activePreset.knobInfo[knobIndex].CC  = 0; 
             activePreset.knobInfo[knobIndex].NRPN = 0;
-            activePreset.knobInfo[knobIndex].SYSEX = 17 | 0x80; //out of range -> knob disabled
-          }
-
-          break;
-        }
-
-      case SETKNOBASBNRPN : //Sets a knob as a Bipolar NRPN (-63, +63) knob
-        {
-          //PARAM 1 : which knob do we affect ?
-          //PARAM 2 : NRPN number LSB
-          //PARAM 3 : NRPN number MSB
-          //PARAM 4 : NRPN range (-range to +range), range max : 63
-          if (data[PARAM1] < NUMBEROFKNOBS) {
-            uint8_t range = data[PARAM4];
-            uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
-            activePreset.knobInfo[knobIndex].NRPN = data[PARAM3] | 0x80;
-            if (range > 63) range = 63;
-            activePreset.knobInfo[knobIndex].SYSEX = 128 + range;
-
-            //knob in normal mode by default
-            clearBits64(activePreset.invertBits, data[PARAM1]);
-          }
-
-          break;
-        }
-
-      case SETKNOBASUNRPN : //Sets a knob as a Unipolar NRPN (0, +127) knob
-        {
-          //PARAM 1 : which knob do we affect ?
-          //PARAM 2 : NRPN number LSB
-          //PARAM 3 : NRPN number MSB
-          //PARAM 4 : NRPN range (0 to +range), max range : 127
-          if (data[PARAM1] < NUMBEROFKNOBS) {
-            uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = data[PARAM2] | 0x80;
-            activePreset.knobInfo[knobIndex].NRPN = data[PARAM3] | 0x80;
-            activePreset.knobInfo[knobIndex].SYSEX = 128 + data[PARAM4];
-
-            //knob in normal mode by default
-            clearBits64(activePreset.invertBits, data[PARAM1]);
-          }
-
-          break;
-        }
-
-
-      //for the ranges +164, +200, +1600 and +2000
-      case SETKNOBASENRPN : //Sets a knob as an Extended Unipolar NRPN (0, XX) knob
-        {
-          //PARAM 1 : which knob do we affect ?
-          //PARAM 2 : NRPN number LSB
-          //PARAM 3 : NRPN number MSB
-          //PARAM 4 : NRPN range (1 : +164, 1 : +200, 1 : +1600, 1 : +2000)
-          if (data[PARAM1] < NUMBEROFKNOBS) {
-            uint8_t range = data[PARAM4];
-            uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
-            activePreset.knobInfo[knobIndex].NRPN = data[PARAM3] | 0x80;
-            switch (range) {
-              case 1 :
-                range = 63 + 1; //+164
-                break;
-              case 2 :
-                range = 63 + 2; //+200
-                break;
-              case 3 :
-                range = 63 + 3; //+1600
-                break;
-              case 4 :
-                range = 63 + 4; //+2000
-                break;
-              default :
-                range = 63 + 10; //wrong number -> no action
-                break;
-            }
-            activePreset.knobInfo[knobIndex].SYSEX = 128 + range;
-
-            //knob in normal mode by default
-            clearBits64(activePreset.invertBits, data[PARAM1]);
-          }
-
-          break;
-        }
-
-      case SETKNOBASDX :  //Sets a knob as a DX7 parameter change knob
-        {
-          //PARAM 1 : which knob do we affect ?
-          //PARAM 2 : DX7 parameter number most significant bit
-          //PARAM 3 : DX7 parameter number last 7 bits
-          //PARAM 4 : maximum value that can be reached by that parameter
-          
-          if (data[PARAM1] < NUMBEROFKNOBS) {
-            activePreset.synth_id = 1; //DX7 ID        
-            uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = 0;
-            activePreset.knobInfo[knobIndex].NRPN = (data[PARAM2] << 7) | data[PARAM3];
-            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4];
-            
-
-            //knob in normal mode by default
-            clearBits64(activePreset.invertBits, data[PARAM1]);
+            activePreset.knobInfo[knobIndex].SYSEX = 0; 
           }
 
           break;
         }
 
         
-      case SETKNOBASREFACEDX :  //Sets a knob as a DX7 parameter change knob
+      case SETKNOBASGLOBALCC :  //Sets a knob as a global CC knob
         {
+          activePreset.knobType = 1;
           //PARAM 1 : which knob do we affect ?
-          //PARAM 2 : DX7 parameter number most significant bit
-          //PARAM 3 : DX7 parameter number last 7 bits
-          //PARAM 4 : maximum value that can be reached by that parameter
-          
-          if (data[PARAM1] < NUMBEROFKNOBS) {
-            activePreset.synth_id = 2; // Reface DX ID        
+          //PARAM 2 : the CC number
+          if (data[PARAM1] < NUMBEROFKNOBS) {          
             uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = 0;
-            activePreset.knobInfo[knobIndex].NRPN = (data[PARAM2] << 7) | data[PARAM3];
-            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4];
-            
+            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
+            activePreset.knobInfo[knobIndex].NRPN = 0;
+            activePreset.knobInfo[knobIndex].SYSEX = 0;
 
             //knob in normal mode by default
             clearBits64(activePreset.invertBits, data[PARAM1]);
@@ -178,26 +39,134 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
           break;
         }
 
-      case SETKNOBASEVO :  //Sets a knob as a Evolver parameter change knob
+
+      case SETKNOBASINDEPCC :   //Sets a knob as an independent CC knob
         {
-          //PARAM 1 : Knob to affect 
-          //PARAM 2 : Control Number
-          //PARAM 3 : Range first (max 127)
-          //PARAM 4 : Range add (for values above 127)
-          
+          activePreset.knobType = 2;
+          //PARAM 1 : which knob do we affect ?
+          //PARAM 2 : CC number
+          //PARAM 3 : the MIDI channel of that knob
           if (data[PARAM1] < NUMBEROFKNOBS) {
-            activePreset.synth_id = 3; //Evolver ID
             uint8_t knobIndex = data[PARAM1];
             activePreset.knobInfo[knobIndex].CC = data[PARAM2];
             activePreset.knobInfo[knobIndex].NRPN = data[PARAM3];
+            activePreset.knobInfo[knobIndex].SYSEX = 0;
+
+            //knob in normal mode by default
+            clearBits64(activePreset.invertBits, data[PARAM1]);
+          }
+
+          break;
+        }     
+
+
+      case SETKNOBASNRPN : //Sets a knob as a Bipolar NRPN (-63, +63) knob
+        {
+          activePreset.knobType = 3;
+          //PARAM 1 : which knob do we affect ?
+          //PARAM 2 : NRPN number LSB
+          //PARAM 3 : NRPN number MSB
+          //PARAM 4 : NRPN range LSB
+          //PARAM 5 : NRPN range MSB
+          if (data[PARAM1] < NUMBEROFKNOBS) {
+            uint8_t knobIndex = data[PARAM1];
+            activePreset.knobInfo[knobIndex].CC = 0;
+            activePreset.knobInfo[knobIndex].NRPN = data[PARAM2] + data[PARAM3];
+            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4] + data[PARAM5];
+
+            //knob in normal mode by default
+            clearBits64(activePreset.invertBits, data[PARAM1]);
+          }
+
+          break;
+        }
+    
+
+      case SETKNOBASDX :  //Sets a knob as a DX7 parameter change knob
+        {
+          activePreset.knobType = 4;
+          //PARAM 1 : which knob do we affect ?
+          //PARAM 2 : DX7 parameter number most significant bit
+          //PARAM 3 : DX7 parameter number last 7 bits
+          //PARAM 4 : maximum value that can be reached by that parameter
+          
+          if (data[PARAM1] < NUMBEROFKNOBS) {
+            uint8_t knobIndex = data[PARAM1];
+            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
+            activePreset.knobInfo[knobIndex].NRPN =  data[PARAM3];
             activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4];
-                        
+            
+            //knob in normal mode by default
+            clearBits64(activePreset.invertBits, data[PARAM1]);
+          }
+
+          break;
+        }
+
+      case SETKNOBASREFACEDX :  //Sets a knob as a DX7 parameter change knob
+        {
+          activePreset.knobType = 5;
+          //PARAM 1 : which knob do we affect ?
+          //PARAM 2 : DX7 parameter number most significant bit
+          //PARAM 3 : DX7 parameter number last 7 bits
+          //PARAM 4 : maximum value that can be reached by that parameter
+          
+          if (data[PARAM1] < NUMBEROFKNOBS) {
+            uint8_t knobIndex = data[PARAM1];
+            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
+            activePreset.knobInfo[knobIndex].NRPN =  data[PARAM3];
+            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4];
+            
+            //knob in normal mode by default
+            clearBits64(activePreset.invertBits, data[PARAM1]);
+          }
+
+          break;
+        }
+
+
+      case SETKNOBASEVO :  //Sets a knob as a Evolver parameter change knob
+        {
+          activePreset.knobType = 6;
+          //PARAM 1 : Knob to affect 
+          //PARAM 2 : Control Number
+          //PARAM 3 : Range MS Nibble 
+          //PARAM 4 : Range LS Nibble 
+          
+          if (data[PARAM1] < NUMBEROFKNOBS) {
+            uint8_t knobIndex = data[PARAM1];
+            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
+            activePreset.knobInfo[knobIndex].NRPN = data[PARAM3];
+            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM4]; 
+                                    
             //knob in normal mode by default
             clearBits64(activePreset.invertBits, data[PARAM1]);
           }
 
           break;
         }        
+        
+case SETKNOBASMOPHO :  //Sets a knob as a Mopho parameter change knob
+        {
+          activePreset.knobType = 7;
+          //PARAM 1 : which knob do we affect ?
+          //PARAM 2 : NRPN parameter number MSB
+          //PARAM 3 : NRPN parameter number LSB
+          //PARAM 4 : NRPN range MSB
+          //PARAM 5 : NRPN range LSB
+          
+          if (data[PARAM1] < NUMBEROFKNOBS) {
+            uint8_t knobIndex = data[PARAM1];
+            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
+            activePreset.knobInfo[knobIndex].NRPN = data[PARAM3];
+            activePreset.knobInfo[knobIndex].SYSEX = (data[PARAM4] << 7 ) + data[PARAM5]; //calculate range 
+
+            //knob in normal mode by default
+            clearBits64(activePreset.invertBits, data[PARAM1]);
+          }
+
+          break;
+        }      
 
       case INVERTKNOB : //Sets a knob to be inverted or not
         {
@@ -285,7 +254,7 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
 //Is executed everytime a MIDI Program Change message is received
 //loads the specified preset
 void handleProgramChange(byte channel, byte number) {
-  if (number < 5) {
+  if (number <= NUMBEROFPRESETS) {
     loadPreset(number);
   }
 }

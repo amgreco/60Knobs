@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 //reset to factory preset timeout
-const uint16_t reset_timeout = 5000;
+const uint16_t reset_timeout = 2000;
 
 /*--- EEPROM Format Chuncks ---*/
 
@@ -28,16 +28,16 @@ enum SysexByteNumber_t {
   PARAM1 = 3,
   PARAM2 = 4,
   PARAM3 = 5,
-  PARAM4 = 6
+  PARAM4 = 6,
+  PARAM5 = 7
 };
 
 //the numbers associated with every command in the interpreter
 enum Command_t {
   SETKNOBASGLOBALCC = 1,
   SETKNOBASINDEPCC = 15,
-  SETKNOBASBNRPN = 2,
-  SETKNOBASUNRPN = 3,
-  SETKNOBASDX = 4,
+  SETKNOBASNRPN = 2,
+//  SETKNOBASUNRPN = 3,
   PRESETSAVE = 5,
   PRESETLOAD = 6,
   DUMPPRESET = 7,
@@ -47,9 +47,11 @@ enum Command_t {
   RANDOMIZER = 10,
   INVERTKNOB = 17,
   DROPNRPNLSB = 19,
-  SETKNOBASENRPN = 18,
+//  SETKNOBASENRPN = 18,
+  SETKNOBASDX = 4,
   SETKNOBASEVO = 22,
-  SETKNOBASREFACEDX = 23
+  SETKNOBASREFACEDX = 23,
+  SETKNOBASMOPHO = 24
 };
 
 /*---   Tunable interface behavior   ---*/

@@ -10,11 +10,8 @@ struct Preset_t {
   // channel the device is sending on
   uint8_t channel;
 
-  // the synth id for custom SysEx
-  // 1 - DX7
-  // 2 - Reface DX
-  // 3 - Evolver
-  uint8_t synth_id;
+  // check the knob type
+  uint8_t knobType; 
   
   // information on how knobs are setup
   struct Knob_t {
@@ -30,14 +27,10 @@ struct Preset_t {
   bool dropNRPNLSBvalue;
 };
 
-
-
 /* Device setup data */
 
 uint8_t currentPresetNumber;
 Preset_t activePreset;
-
-
 
 /* Hardware data */
 
