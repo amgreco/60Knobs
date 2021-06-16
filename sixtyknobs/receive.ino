@@ -6,19 +6,6 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
     //check the command byte and acts accordingly
     switch (data[COMMAND]) {
 
-      case DISABLEKNOB :  //Sets a knob as an inactive CC knob
-        {
-          activePreset.knobType = 0;         
-          //PARAM 1 : which knob do we affect ?
-          if (data[PARAM1] < NUMBEROFKNOBS) {
-            uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC  = 0; 
-            activePreset.knobInfo[knobIndex].NRPN = 0;
-            activePreset.knobInfo[knobIndex].SYSEX = 0; 
-          }
-
-          break;
-        }
 
 
       case SETKNOBASCC :   //Sets a knob as an independent CC knob
@@ -128,7 +115,7 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
           break;
         }        
         
-case SETKNOBASMOPHO :  //Sets a knob as a Mopho parameter change knob
+      case SETKNOBASMOPHO :  //Sets a knob as a Mopho parameter change knob
         {
           activePreset.knobType = 6;
           //PARAM 1 : which knob do we affect ?
@@ -150,6 +137,20 @@ case SETKNOBASMOPHO :  //Sets a knob as a Mopho parameter change knob
           break;
         }      
 
+      case DISABLEKNOB :  //Sets a knob as an inactive CC knob
+        {
+          //PARAM 1 : which knob do we affect ?
+          if (data[PARAM1] < NUMBEROFKNOBS) {
+            uint8_t knobIndex = data[PARAM1];
+            activePreset.knobInfo[knobIndex].CC  = 0; 
+            activePreset.knobInfo[knobIndex].NRPN = 0;
+            activePreset.knobInfo[knobIndex].SYSEX = 0; 
+          }
+
+          break;
+        }
+
+        
       case INVERTKNOB : //Sets a knob to be inverted or not
         {
           //PARAM1 : which knob do we affect ?

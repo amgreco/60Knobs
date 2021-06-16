@@ -20,7 +20,6 @@ void interpretKnob(uint8_t index, bool force, bool inhibit) {
   // 5 - Reface DX
   // 6 - DSI Evolver
   // 7 - DSI Mopho
-  // ...more to come
 
 
   switch (activePreset.knobType){
