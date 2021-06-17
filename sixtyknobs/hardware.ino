@@ -40,7 +40,7 @@ uint16_t getKnobValue(uint8_t index)
 
   //we flip the value of the knob if it is in "inverted" mode
   if (isInverted(index) != 0) {
-    average = 127 - average;
+    average = KNOB_RES - average;
   }
 
   return average;
