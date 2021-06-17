@@ -39,8 +39,8 @@ const uint8_t knobLUT[60] =
   53, 37, 1, 25, 23, 15, 7, 31, 47, 63, 55, 39, 41, 57, 22, 14, 6, 30, 46, 62, 54, 38, 49, 33, 20, 12, 4, 28, 44, 60, 52, 36
 };
 
-uint8_t knobBuffer[4][60];
-uint8_t emittedValue[3][60];
+uint16_t knobBuffer[4][60];
+uint16_t emittedValue[3][60];
 unsigned long lastButtonPress;  //stores the timestamp of the last button press
 
 // byte index in EEPROM for the last used preset

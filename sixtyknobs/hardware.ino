@@ -24,7 +24,7 @@ void updateKnob(uint8_t index) {
   for (int i = 3; i > 0; i--) {
     knobBuffer[i][index] = knobBuffer[i - 1][index];
   }
-  knobBuffer[0][index] = analogRead(A0) >> 3;
+  knobBuffer[0][index] = analogRead(A0);// >> 4;
 }
 
 /*

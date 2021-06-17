@@ -57,21 +57,21 @@ void interpretKnob(uint8_t index, bool force, bool inhibit) {
   }
 }
 
-void sendGlobalCC(uint8_t param, uint8_t range, uint8_t value, uint8_t channel){ 
-  value = map(value, 0, 127, 0, range); 
+void sendGlobalCC(uint8_t param, uint8_t range, uint16_t value, uint8_t channel){ 
+  value = map(value, 0, KNOB_RES, 0, range); 
   MIDI.sendControlChange(param,value,channel);
 
 }
 
-void sendIndeCC(uint8_t param, uint8_t range, uint8_t value, uint8_t channel){
-  value = map(value, 0, 127, 0, range); 
+void sendIndeCC(uint8_t param, uint8_t range, uint16_t value, uint8_t channel){
+  value = map(value, 0, KNOB_RES, 0, range); 
   MIDI.sendControlChange(param,value,channel);
 
 }
   
-void sendNRPN(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value, uint8_t channel) {
+void sendNRPN(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint16_t value, uint8_t channel) {
   //map values range
-  value = map(value,0,127,0,range);
+  value = map(value,0,KNOB_RES,0,range);
 
   //Send message
   MIDI.sendControlChange(99, paramMSB, channel);
@@ -81,11 +81,11 @@ void sendNRPN(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value, 
 }
 
 
-void sendDX7Message(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value) {
+void sendDX7Message(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint16_t value) {
   //the array to transmit
   uint8_t data[5] = {0x43, 0x10, 0x00, 0x00, 0x00};
 
-  value = map(value, 0, 127, 0, range);
+  value = map(value, 0, KNOB_RES, 0, range);
   data[2] = paramMSB;
   data[3] = paramLSB;
   data[4] = value;
@@ -97,7 +97,7 @@ void sendDX7Message(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t v
   MIDI.sendControlChange(127, 0, 1);  //cc 127 on channel 1 (DX7 only sensitive on channel 1)
 }
 
-void sendRefaceDXMessage(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value) {
+void sendRefaceDXMessage(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint16_t value) {
   //the array to transmit
   uint8_t data[9] = {0x43, 0x10, 0x7F, 0x1C, 0x05, 0x30, 0x00, 0x00, 0x00};
 
@@ -116,18 +116,18 @@ void sendRefaceDXMessage(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint
     data[7] = paramNBR;
   }
 
-  value = map(value, 0, 127, 0, range);
+  value = map(value, 0, KNOB_RES, 0, range);
   data[8] = value;
 
   MIDI.sendSysEx(9, data, false);
 }
 
 
-void sendEvolverMessage(uint8_t control, uint8_t rangeLS, uint8_t rangeMS, uint8_t value) {
+void sendEvolverMessage(uint8_t control, uint8_t rangeLS, uint8_t rangeMS, uint16_t value) {
   //the array to transmit
   uint8_t data[7] = {0x01, 0x20, 0x01, 0x01, 0x00, 0x00, 0x00};
 
-  value = map(value,0,127,0,rangeLS+rangeMS);
+  value = map(value,0,KNOB_RES,0,rangeLS+rangeMS);
 
   data[4] = control;
   data[5] = value & 0x0F; // LS Nibble
@@ -137,9 +137,9 @@ void sendEvolverMessage(uint8_t control, uint8_t rangeLS, uint8_t rangeMS, uint8
 }
 
 
-void sendMophoNRPN(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint8_t value, uint8_t channel) {
+void sendMophoNRPN(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint16_t value, uint8_t channel) {
   //map values range
-  value = map(value,0,127,0,range);
+  value = map(value,0,KNOB_RES,0,range);
 
   //Send message
   MIDI.sendControlChange(99, paramMSB, channel);

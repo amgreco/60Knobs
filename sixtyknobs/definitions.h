@@ -54,6 +54,9 @@ enum Command_t {
   SETKNOBASMOPHO = 24
 };
 
+/*---   Knob Resolution   ---*/
+const uint16_t KNOB_RES = 1023;
+
 /*---   Tunable interface behavior   ---*/
 const uint8_t KnobSelectThreshold = 2;
 //#define CLICKSPEEDMIN 100
