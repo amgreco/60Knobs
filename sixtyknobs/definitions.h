@@ -36,8 +36,6 @@ enum SysexByteNumber_t {
 enum Command_t {
   SETKNOBASCC = 1,
   SETKNOBASNRPN = 2,
-//  SETKNOBASINDEPCC = 15,
-//  SETKNOBASUNRPN = 3,
   PRESETSAVE = 5,
   PRESETLOAD = 6,
   DUMPPRESET = 7,
@@ -47,7 +45,6 @@ enum Command_t {
   RANDOMIZER = 10,
   INVERTKNOB = 17,
   DROPNRPNLSB = 19,
-//  SETKNOBASENRPN = 18,
   SETKNOBASDX = 4,
   SETKNOBASEVO = 22,
   SETKNOBASREFACEDX = 23,
@@ -55,10 +52,10 @@ enum Command_t {
 };
 
 /*---   Knob Resolution   ---*/
-const uint16_t KNOB_RES = 1023;
+const uint16_t KNOB_RES = 1023; //10bits (atmega328)
 
 /*---   Tunable interface behavior   ---*/
-const uint8_t KnobSelectThreshold = 2;
+const uint8_t KnobSelectThreshold = 2 ;
 //#define CLICKSPEEDMIN 100
 //#define CLICKSPEEDMAX 350
 
