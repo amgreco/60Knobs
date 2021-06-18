@@ -46,7 +46,10 @@ void interpretKnob(uint8_t index, bool force, bool inhibit) {
     break;
     case 6 : // MOPHO
       sendMophoNRPN(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend, activePreset.channel);
-    break;  
+    break; 
+    case 7 : //SID
+      sendSIDNRPN(activePreset.knobInfo[index].CC, activePreset.knobInfo[index].NRPN, activePreset.knobInfo[index].SYSEX, toSend, activePreset.channel);
+    break;
   }
 
     //we fill the emission buffers
@@ -148,6 +151,17 @@ void sendMophoNRPN(uint8_t paramMSB, uint8_t paramLSB, uint8_t range, uint16_t v
   MIDI.sendControlChange(38, value & 0x7F , channel);
 }
 
+void sendSIDNRPN(uint8_t paramMSB, uint8_t paramLSB, uint16_t range, uint16_t value, uint8_t channel) {
+  
+  //map values range
+  value = map(value, 0, KNOB_RES, 0, range);
+
+  //Send message
+  MIDI.sendControlChange(99, paramMSB +64, channel); //+64 is to access absolute values on MIDIBOX SID
+  MIDI.sendControlChange(98, paramLSB, channel); 
+  MIDI.sendControlChange(6, value / 128 , channel);  
+  MIDI.sendControlChange(38, value % 128 , channel);
+}
 
 
 //Handles the "menu" system, what to do when the button is pressed

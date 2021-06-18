@@ -48,7 +48,8 @@ enum Command_t {
   SETKNOBASDX = 4,
   SETKNOBASEVO = 22,
   SETKNOBASREFACEDX = 23,
-  SETKNOBASMOPHO = 24
+  SETKNOBASMOPHO = 24,
+  SETKNOBASSID = 25
 };
 
 /*---   Knob Resolution   ---*/

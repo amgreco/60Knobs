@@ -135,8 +135,30 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
           }
 
           break;
-        }      
+        }   
+           
+case SETKNOBASSID :  //Sets a knob as a SID  parameter change knob
+        {
+          activePreset.knobType = 7;
+          //PARAM 1 : which knob do we affect ?
+          //PARAM 2 : NRPN parameter number MSB
+          //PARAM 3 : NRPN parameter number LSB
+          //PARAM 4 : NRPN range MSB
+          //PARAM 5 : NRPN range LSB
+          
+          if (data[PARAM1] < NUMBEROFKNOBS) {
+            uint8_t knobIndex = data[PARAM1];
+            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
+            activePreset.knobInfo[knobIndex].NRPN = data[PARAM3];
+            activePreset.knobInfo[knobIndex].SYSEX = (data[PARAM4] << 7 ) + data[PARAM5]; //calculate range  
 
+            //knob in normal mode by default
+            clearBits64(activePreset.invertBits, data[PARAM1]);
+          }
+
+          break;
+        }      
+        
       case DISABLEKNOB :  //Sets a knob as an inactive CC knob
         {
           //PARAM 1 : which knob do we affect ?
