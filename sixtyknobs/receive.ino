@@ -126,9 +126,9 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
           
           if (data[PARAM1] < NUMBEROFKNOBS) {
             uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = (data[PARAM2] << 7 ) + data[PARAM3];
-            activePreset.knobInfo[knobIndex].NRPN = data[PARAM4];
-            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM5]; 
+            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
+            activePreset.knobInfo[knobIndex].NRPN = data[PARAM3];
+            activePreset.knobInfo[knobIndex].SYSEX = (data[PARAM4] << 7 ) + data[PARAM5]; //calculate range 
 
             //knob in normal mode by default
             clearBits64(activePreset.invertBits, data[PARAM1]);
@@ -148,9 +148,9 @@ case SETKNOBASSID :  //Sets a knob as a SID  parameter change knob
           
           if (data[PARAM1] < NUMBEROFKNOBS) {
             uint8_t knobIndex = data[PARAM1];
-            activePreset.knobInfo[knobIndex].CC = data[PARAM2];
-            activePreset.knobInfo[knobIndex].NRPN = data[PARAM3];
-            activePreset.knobInfo[knobIndex].SYSEX = (data[PARAM4] << 7 ) + data[PARAM5]; //calculate range  
+            activePreset.knobInfo[knobIndex].CC = data[PARAM2]*128 + data[PARAM3];
+            activePreset.knobInfo[knobIndex].NRPN = data[PARAM4];
+            activePreset.knobInfo[knobIndex].SYSEX = data[PARAM5]; 
 
             //knob in normal mode by default
             clearBits64(activePreset.invertBits, data[PARAM1]);

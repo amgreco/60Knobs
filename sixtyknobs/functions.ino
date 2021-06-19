@@ -155,13 +155,17 @@ void sendSIDNRPN(uint8_t param, uint8_t rangeLSB, uint8_t rangeMSB, uint16_t val
   //full range can be >256 but not parameters
   
   //map values range
-  value = map(value, 0, KNOB_RES, 0, rangeLSB+rangeMSB);
+  value = map(value, 0, KNOB_RES, 0, (rangeLSB*128)+rangeMSB);
+
+  uint8_t paramLSB = param & 0x7F;
+  uint8_t paramMSB = (param & 0x80) >> 7;
+
   
   //Send message
-  MIDI.sendControlChange(99, (param / 128) +64, channel); //+64 is to access absolute values on MIDIBOX SID
   MIDI.sendControlChange(98, param % 128, channel); 
-  MIDI.sendControlChange(6, value / 128 , channel);  
-  MIDI.sendControlChange(38, value % 128 , channel);
+  MIDI.sendControlChange(99, (param/128)+64, channel); //+64 is to access absolute values on MIDIBOX SID
+  MIDI.sendControlChange(38, value % 128 , channel); //value LSB
+  MIDI.sendControlChange(6, value / 128 , channel); //value MSB
 }
 
 
