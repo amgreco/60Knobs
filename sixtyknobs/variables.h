@@ -17,7 +17,7 @@ struct Preset_t {
   struct Knob_t {
     uint8_t CC;
     uint8_t NRPN;
-    uint16_t SYSEX;
+    uint8_t SYSEX;
   } knobInfo[NUMBEROFKNOBS];
   
   // compressed bitarray also for knobs setup
