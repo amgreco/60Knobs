@@ -137,7 +137,8 @@ void sysExInterpreter(byte* data, unsigned messageLength) {
           break;
         }   
            
-case SETKNOBASSID :  //Sets a knob as a SID  parameter change knob
+       
+       case SETKNOBASSID :  //Sets a knob as a SID  parameter change knob
         {
           activePreset.knobType = 7;
           //PARAM 1 : which knob do we affect ?
